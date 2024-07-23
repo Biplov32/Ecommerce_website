@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Shopping Cart</title>
+    <!-- Add Bootstrap CSS -->
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        /* Custom CSS to adjust card size */
+        .card-custom {
+            width: 18rem; /* Set the desired width */
+        }
+        .card-img-top {
+            height: 180px; /* Adjust the height of the image */
+            object-fit: cover; /* Ensure image fits the container */
+        }
+    </style>
+</head>
+<body>
+    {% load custom_filters %}
+    <div class="container mt-4">
+        <h1 class="mb-4">Shopping Cart</h1>
+
+        {% if cart_items %}
+            <div class="row">
+                {% for item in cart_items %}
+                    <div class="col-md-4 mb-4">
+                        <div class="card card-custom">
+                            <img src="{{ item.product.photo.url }}" class="card-img-top" alt="{{ item.product.name }}">
+                            <div class="card-body">
+                                <h5 class="card-title">{{ item.product.name }}</h5>
+                                <p class="card-text">Price: Rs {{ item.product.price }}</p>
+                                <p class="card-text">Quantity: {{ item.quantity }}</p>
+                                <p class="card-text">Total Price: {{ item.total_price }}</p>
+                                <p class="card-text">Total price: Rs {{ item.quantity|multiply:item.product.price|floatformat:2 }}</p>
+                                <!-- Buy button -->
+                                <a href="/" class="btn btn-success">Buy</a>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p class="alert alert-info">Your cart is empty.</p>
+        {% endif %}
+    </div>
+
+    <!-- Add Bootstrap JS and dependencies -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.1/dist/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>
