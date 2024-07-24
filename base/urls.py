@@ -14,4 +14,8 @@ urlpatterns =[
     path('delete-product/int:<pk>',views.deleteProduct, name= "delete-product"),
     path('addtocart/<int:product_id>',views.Addcart, name= "add-cart"),
     path('viewcart/',views.cart_detail, name="view-cart"),
+    path('checkout/',views.OrderCheckout,name="CheckOut"),
+    path('checkout/payment/<int:id>/',views.make_payment,name='make_payment'),
+    path('delivery/address/<int:id>/',views.order_delivery_address,name='order_delivery_address'),
+    path('place/order/<int:id>/',views.place_order,name='place_order'),
     ]

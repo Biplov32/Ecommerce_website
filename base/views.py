@@ -1,7 +1,10 @@
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, render,redirect
-from base.models import Category, product, ShoppingCart
+from base import models
+from base.models import Category, ShoppingOrder, product, ShoppingCart, DeliveryAddress
 from base.forms import ProductForm, CatogeryForm, CreateAddtoCartForm
+from django.contrib.auth.models import User
+
 from django.contrib.auth.decorators import login_required
 # Create your views here.
 @login_required
@@ -122,4 +125,47 @@ def cart_detail(request):
         'cart_items': cart_items,
     }
     return render(request, 'cart_detail.html', context)
+    
+def OrderCheckout(request):
+    user = User.objects.get(id=request.user.id)
+    items = ShoppingCart.objects.filter(user=user)
+    total_amount = 0
+    for item in items:
+        total_amount = total_amount+((item.quantity)*(item.product.price))
+    shop_order = ShoppingOrder(user=user,total_amount=total_amount)
+    shop_order.save()
+    return redirect(f'payment/{shop_order.id}/')
 
+def make_payment(request,id):
+    shop_order = ShoppingOrder.objects.get(id=id)
+    if request.method=='POST':
+        paid_amount = request.POST['paid_amount']
+        payment_mode = request.POST['payment_mode']
+        shop_order.paid_amount = paid_amount
+        shop_order.payment_mode = payment_mode
+        shop_order.save() 
+        return redirect(f'/delivery/address/{shop_order.id}/')
+    return render(request,'payment.html',{'shop_order':shop_order})
+
+def order_delivery_address(request,id):
+    shop_order = ShoppingOrder.objects.get(id=id)
+    user = User.objects.get(id=request.user.id)
+    delivery_address = DeliveryAddress.objects.filter(user = user)
+    if request.method=='POST':
+        delivery_address = DeliveryAddress.objects.create(user=user,address = request.POST['address'])
+        shop_order.address = delivery_address
+        shop_order.payment_status = '0'
+        shop_order.delivery_status = '0'
+        shop_order.save()
+        return HttpResponse('<h1>Order Placed Successfully</h1>.<a href="/">Home</a>')
+    return render(request,'address.html',{'shop_order':shop_order,'delivery_address':delivery_address})
+
+def place_order(request,id):
+    user = User.objects.get(id=request.user.id)
+    delivery_address = DeliveryAddress.objects.filter(user = user)[0]
+    shop_order = ShoppingOrder.objects.get(id=id)
+    shop_order.address = delivery_address
+    shop_order.payment_status = '0'
+    shop_order.delivery_status = '0'
+    shop_order.save()
+    return HttpResponse('<h1>Order Placed Successfully</h1>.<a href="/">Home</a>')
